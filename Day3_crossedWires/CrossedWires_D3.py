@@ -72,11 +72,15 @@ def CheckIntersection(line1: Line, line2: Line) -> point_2D:
     elif line1.OrientationAngle != line2.OrientationAngle:
         # lines are perpendicular
         if line1.OrientationAngle == 0 and line1.Origin.x <= line2.Origin.x <= line1.End.x:
+            if line1.Origin.x <= line2.Origin.x <= line1.End.x:
             # vertical line 2 is crossing horizontal line 1 at line2.x
-            return point_2D(line2.Origin.x, line1.Origin.y)
-        if line1.OrientationAngle == 90 and line1.Origin.y <= line2.Origin.y <= line1.End.y:
+                return point_2D(line2.Origin.x, line1.Origin.y)
+        if line1.OrientationAngle == 90:
             # Horizontal line 2 is crossing vertical line 1 at line2.x
-            return point_2D(line1.Origin.x, line2.Origin.y)
+            x_common_min = FindMinCommonValue(line1.Origin.x, line1.End.x, line2.Origin.x, line2.End.x)
+            y_common_min = FindMinCommonValue(line1.Origin.y, line1.End.y, line2.Origin.y, line2.End.y)
+            if x_common_min != -1:
+                return point_2D(x_common_min, y_common_min)
 
     return point
 
@@ -108,11 +112,19 @@ class ProcessCommandsToWireSegments:
             print("wtf")
         return end_point
 
+def plot_segments(segment):
+    x = [0]
+    y = [0]
+    for seg in segment.Segment:
+        x.append(seg.End.x)
+        y.append(seg.End.y)
+    plt.plot(x, y)
 
 # process
 #input_file = "Day3_Crossed_wires.txt"
 input_file = "crossedwiretest.txt"
 #input_file = "simpletest.txt"
+plot_active = True
 
 # parse commands from txt file
 with open(input_file, 'r') as file:
@@ -125,6 +137,10 @@ with open(input_file, 'r') as file:
 Wire1_segments = ProcessCommandsToWireSegments(Commands_wire1)
 Wire2_segments = ProcessCommandsToWireSegments(Commands_wire2)
 
+if plot_active:
+    plot_segments(Wire1_segments)
+    plot_segments(Wire2_segments)
+    plt.show()
 
 # check intersections
 list_of_intersection_points = []
@@ -138,8 +154,6 @@ for segment1 in Wire1_segments.Segment:
 print(len(list_of_intersection_points))
 
 #plot
-
-
 
 
 #
