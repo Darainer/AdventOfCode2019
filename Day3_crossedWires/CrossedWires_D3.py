@@ -1,4 +1,9 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+from matplotlib import colors as mcolors
+
+
 
 class point_2D:
     def __init__(self, x, y):
@@ -19,9 +24,9 @@ class Line:
 
     def check_line_orientation(self):
         if self.End.x == self.Origin.x:
-            self.OrientationAngle = 0
-        elif self.End.y == self.Origin.y:
             self.OrientationAngle = 90
+        elif self.End.y == self.Origin.y:
+            self.OrientationAngle = 0
         else:
             self.OrientationAngle = -1
 
@@ -38,28 +43,42 @@ class GridPoint:
 
 def FindMinCommonValue(p1,p2,q1,q2) -> int:
 
+    if p1 <= q1 <= p2 or p1 <= q2 <= p2:
+        # overlap exists
+        closest_1 = min(abs(p1), abs(p2))
+        closest_2 = min(abs(q1), abs(q2))
+        if closest_1 < closest_2:
+            return closest_2
+        else:
+            return closest_1
+        return
+    else:
+        return -1
 
-def CheckIntersection(line1: Line, line2: Line): # -> point_2D:
-        if line1.OrientationAngle == line2.OrientationAngle:
-            # lines_are_parallel
-            if line1.OrientationAngle == 90 & line1.Origin.x == line2.Origin.x:
-                # lines are collinear x plane
-                y_common_min = find_min_common(line1.Origin.x, line1.End.x, line2.Origin.x, line2.End.x)
-                if y_common_min != -1:
-                    return point_2D(line1.Origin.x, y_common_min)
-            if line1.OrientationAngle == 0:
-                # lines are collinear y plane
-                x_common_min = find_min_common(line1.Origin.x, line1.End.x, line2.Origin.x, line2.End.x)
-                if x_common_min != -1:
-                    return point_2D(x_common_min, line1.Origin.y)
-        elif line1.OrientationAngle != line2.OrientationAngle:
-            # lines are perpendicular
-            if line1.OrientationAngle == 0 & (line2.Origin.x in range(line1.Origin.x, line1.End.x)):
-                # vertical line 2 is crossing horizontal line 1 at line2.x
-                return point_2D(line2.Origin.x, line1.Origin.y)
-            if line1.OrientationAngle == 90 & (line2.Origin.y in range(line1.Origin.y, line1.End.y)):
-                # Horizontal line 2 is crossing vertical line 1 at line2.x
-                return point_2D(line1.Origin.x, line2.Origin.y)
+def CheckIntersection(line1: Line, line2: Line) -> point_2D:
+    point = point_2D(0, 0)
+    if line1.OrientationAngle == line2.OrientationAngle:
+        # lines_are_parallel
+        if line1.OrientationAngle == 90 and line1.Origin.x == line2.Origin.x:
+            # lines are collinear x plane
+            y_common_min = FindMinCommonValue(line1.Origin.y, line1.End.y, line2.Origin.y, line2.End.y)
+            if y_common_min != -1:
+                return point_2D(line1.Origin.x, y_common_min)
+        if line1.OrientationAngle == 0 and line1.Origin.y == line2.Origin.y:
+            # lines are collinear y plane
+            x_common_min = FindMinCommonValue(line1.Origin.x, line1.End.x, line2.Origin.x, line2.End.x)
+            if x_common_min != -1:
+                return point_2D(x_common_min, line1.Origin.y)
+    elif line1.OrientationAngle != line2.OrientationAngle:
+        # lines are perpendicular
+        if line1.OrientationAngle == 0 and line1.Origin.x <= line2.Origin.x <= line1.End.x:
+            # vertical line 2 is crossing horizontal line 1 at line2.x
+            return point_2D(line2.Origin.x, line1.Origin.y)
+        if line1.OrientationAngle == 90 and line1.Origin.y <= line2.Origin.y <= line1.End.y:
+            # Horizontal line 2 is crossing vertical line 1 at line2.x
+            return point_2D(line1.Origin.x, line2.Origin.y)
+
+    return point
 
 class ProcessCommandsToWireSegments:
     def __init__(self, commands):
@@ -91,11 +110,14 @@ class ProcessCommandsToWireSegments:
 
 
 # process
-input_file = "Day3_Crossed_wires.txt"
+#input_file = "Day3_Crossed_wires.txt"
+input_file = "crossedwiretest.txt"
+#input_file = "simpletest.txt"
 
 # parse commands from txt file
 with open(input_file, 'r') as file:
     program_input1 = file.readline()
+    program_input1 = program_input1.strip('\n')
     Commands_wire1 = program_input1.split(',')
     program_input2 = file.readline()
     Commands_wire2 = program_input2.split(',')
@@ -103,15 +125,22 @@ with open(input_file, 'r') as file:
 Wire1_segments = ProcessCommandsToWireSegments(Commands_wire1)
 Wire2_segments = ProcessCommandsToWireSegments(Commands_wire2)
 
+
 # check intersections
 list_of_intersection_points = []
+ck = point_2D
 for segment1 in Wire1_segments.Segment:
     for segment2 in Wire2_segments.Segment:
-        point = CheckIntersection(segment1, segment2)
-        ck = CheckIntersection(Wire1_segments.Segment[1], Wire2_segments.Segment[1])
-        list_of_intersection_points.append(ck)
+        ck = CheckIntersection(segment1, segment2)
+        if ck.dist != 0:
+            list_of_intersection_points.append(ck)
 
 print(len(list_of_intersection_points))
+
+#plot
+
+
+
 
 #
 # print(Direction1[1].keys(), Direction1[1].items())
