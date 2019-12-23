@@ -20,20 +20,34 @@ class Line:
         self.Origin = origin
         self.End = end
         self.Angle = int
+        self.min_x = int
+        self.max_x = int
+        self.min_y = int
+        self.max_y = int
         self.check_line_orientation()
-
 
     def check_line_orientation(self):
         if self.End.x == self.Origin.x:
+            self.min_x = self.max_x = self.End.x
             if self.End.y > self.Origin.y:
                 self.Angle = 90
+                self.max_y = self.End.y
+                self.min_y = self.Origin.y
             else:
+                self.max_y = self.Origin.y
+                self.min_y = self.End.y
                 self.Angle = -90
         elif self.End.y == self.Origin.y:
+            self.min_y = self.max_y = self.End.y
             if self.End.x > self.Origin.x:
                 self.Angle = 0
+                self.max_x = self.End.x
+                self.min_x = self.Origin.x
             else:
                 self.Angle = 180
+                self.max_x = self.Origin.x
+                self.min_x = self.End.x
+
 
 class GridPoint:
     def __init__(self):
@@ -46,17 +60,16 @@ class GridPoint:
     def __str__(self):
         return "Wire1Contact is %s, Wire1Contact is %s" % (self.Wire1Contact, self.Wire2Contact)
 
-def FindMinCommonValue(p1,p2,q1,q2) -> int:
+def FindMinCommonValue(v1, v2, q1, q2) -> int:
 
-    if p1 <= q1 <= p2 or p1 <= q2 <= p2:
+    if v1 <= q1 <= v2 or v1 <= q2 <= v2:
         # overlap exists
-        closest_1 = min(abs(p1), abs(p2))
+        closest_1 = min(abs(v1), abs(v2))
         closest_2 = min(abs(q1), abs(q2))
         if closest_1 < closest_2:
             return closest_2
         else:
             return closest_1
-        return
     else:
         return -1
 
@@ -67,7 +80,7 @@ def linesareParallel(line1: Line, line2: Line) -> bool:
     if (line1.Angle == 0 or line1.Angle == 180) and (line2.Angle == 0 or line2 == 180):
         lines_are_parallel = True
     else:
-        lines_are_parallel= False
+        lines_are_parallel = False
     return lines_are_parallel
 
 
@@ -86,18 +99,20 @@ def CheckIntersection(line1: Line, line2: Line) -> point_2D:
                 return point_2D(x_common_min, line1.Origin.y)
     else:
         # lines are perpendicular
-        if (line1.Angle == 0 or 180) and line1.Origin.x <= line2.Origin.x <= line1.End.x:
-            if line2.Origin.y <= line1.Origin.y <= line2.End.y:
-            # vertical line 2 is crossing horizontal line 1 at line2.x
+        if (line1.Angle == 0 or 180) and (line1.min_x <= line2.Origin.x <= line1.max_x):
+            # x overlap
+            if line2.min_y <= line1.Origin.y <= line2.max_y:
+            # x and y overlap: vertical line 2 is crossing horizontal line 1 at line2.x
                 return point_2D(line2.Origin.x, line1.Origin.y)
-        if line1.Angle == 90 or -90:
-            # Horizontal line 2 is crossing vertical line 1 at line2.x
-            x_common_min = FindMinCommonValue(line1.Origin.x, line1.End.x, line2.Origin.x, line2.End.x)
-            y_common_min = FindMinCommonValue(line1.Origin.y, line1.End.y, line2.Origin.y, line2.End.y)
-            if x_common_min != -1:
-                return point_2D(x_common_min, y_common_min)
+
+        if (line2.Angle == 0 or 180) and (line2.min_x <= line1.Origin.x <= line2.max_x):
+            #x overlap
+            if line1.min_y <= line2.Origin.y <= line1.max_y:
+            #x and y overlap  vertical line 1 is crossing horizontal line 2 at line1.x
+                return point_2D(line1.Origin.x, line2.Origin.y)
 
     return point
+
 
 class ProcessCommandsToWireSegments:
     def __init__(self, commands):
@@ -137,7 +152,8 @@ def plot_segments(segment):
 
 # process
 #input_file = "Day3_Crossed_wires.txt"
-input_file = "crossedwiretest.txt"
+#input_file = "crossedwiretest.txt"
+input_file = "crossedwiretest2.txt"
 #input_file = "simpletest.txt"
 plot_active = True
 
