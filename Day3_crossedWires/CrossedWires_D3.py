@@ -16,7 +16,7 @@ class point_2D:
         return new_point
 
 class Line:
-    def __init__(self, origin: point_2D, end: point_2D):
+    def __init__(self, origin: point_2D, end: point_2D, steps: int):
         self.Origin = origin
         self.End = end
         self.Angle = int
@@ -25,6 +25,7 @@ class Line:
         self.min_y = int
         self.max_y = int
         self.check_line_orientation()
+        self.steps_origin = steps
 
     def check_line_orientation(self):
         if self.End.x == self.Origin.x:
@@ -47,6 +48,18 @@ class Line:
                 self.Angle = 180
                 self.max_x = self.Origin.x
                 self.min_x = self.End.x
+
+    def steps_to_point(self, point: point_2D) -> int:
+        x_steps = abs(point.x - self.Origin.x)
+        y_steps = abs(point.y - self.Origin.y)
+        return x_steps + y_steps
+
+class intersection_point:
+    def __init__(self, point: point_2D, line1: Line, line2: Line):
+        self.point = point
+        self.stepsWire1 = line1.steps_origin + line1.steps_to_point(point)
+        self.stepsWire2 = line2.steps_origin + line2.steps_to_point(point)
+        self.totalSteps = self.stepsWire1 + self.stepsWire2
 
 
 class GridPoint:
@@ -84,34 +97,38 @@ def linesareParallel(line1: Line, line2: Line) -> bool:
     return lines_are_parallel
 
 
-def CheckIntersection(line1: Line, line2: Line) -> point_2D:
+def CheckIntersection(line1: Line, line2: Line) -> intersection_point:
     point = point_2D(0, 0)
     if linesareParallel(line1, line2):
         if (line1.Angle == 90 or -90) and line1.Origin.x == line2.Origin.x:
             # lines are collinear x plane
             y_common_min = FindMinCommonValue(line1.Origin.y, line1.End.y, line2.Origin.y, line2.End.y)
             if y_common_min != -1:
-                return point_2D(line1.Origin.x, y_common_min)
+                point = point_2D(line1.Origin.x, y_common_min)
+                return intersection_point(point, line1, line2)
         if (line1.Angle == 0 or 180) and line1.Origin.y == line2.Origin.y:
             # lines are collinear y plane
             x_common_min = FindMinCommonValue(line1.Origin.x, line1.End.x, line2.Origin.x, line2.End.x)
             if x_common_min != -1:
-                return point_2D(x_common_min, line1.Origin.y)
+                point = point_2D(x_common_min, line1.Origin.y)
+                return intersection_point(point, line1, line2)
     else:
         # lines are perpendicular
         if (line1.Angle == 0 or 180) and (line1.min_x <= line2.Origin.x <= line1.max_x):
             # x overlap
             if line2.min_y <= line1.Origin.y <= line2.max_y:
             # x and y overlap: vertical line 2 is crossing horizontal line 1 at line2.x
-                return point_2D(line2.Origin.x, line1.Origin.y)
+                point = point_2D(line2.Origin.x, line1.Origin.y)
+                return intersection_point(point, line1, line2)
 
         if (line2.Angle == 0 or 180) and (line2.min_x <= line1.Origin.x <= line2.max_x):
             #x overlap
             if line1.min_y <= line2.Origin.y <= line1.max_y:
             #x and y overlap  vertical line 1 is crossing horizontal line 2 at line1.x
-                return point_2D(line1.Origin.x, line2.Origin.y)
+                point = point_2D(line1.Origin.x, line2.Origin.y)
+                return intersection_point(point, line1, line2)
 
-    return point
+    return intersection_point(point, line1, line2)
 
 
 class ProcessCommandsToWireSegments:
@@ -123,9 +140,11 @@ class ProcessCommandsToWireSegments:
 
     def get_segments(self):
         Currentpoint = point_2D(0, 0)
+        steps = 0
         for it in range(len(self.commands)):
             end_point = self.return_endpoint_after_command(self.commands[it], Currentpoint)
-            self.Segment.append(Line(Currentpoint, end_point))
+            self.Segment.append(Line(Currentpoint, end_point, steps))
+            steps += abs(end_point.dist - Currentpoint.dist) #steps at start of line
             Currentpoint = end_point
 
     def return_endpoint_after_command(self, command, origin: point_2D) -> point_2D:
@@ -151,9 +170,9 @@ def plot_segments(segment):
     plt.plot(x, y)
 
 # process
-input_file = "Day3_Crossed_wires.txt"
+#input_file = "Day3_Crossed_wires.txt"
 #input_file = "crossedwiretest.txt"
-#input_file = "crossedwiretest2.txt"
+input_file = "crossedwiretest2.txt"
 #input_file = "simpletest.txt"
 plot_active = True
 
@@ -175,15 +194,18 @@ if plot_active:
 
 # check intersections
 list_of_intersection_points = []
-ck = point_2D
+ck = intersection_point
 for segment1 in Wire1_segments.Segment:
     for segment2 in Wire2_segments.Segment:
         ck = CheckIntersection(segment1, segment2)
-        if ck.dist != 0:
+
+        if ck.point.dist != 0:
             list_of_intersection_points.append(ck)
 
-list_of_intersection_points.sort(key=lambda point: point.dist)
-print(list_of_intersection_points[0].dist)
+list_of_intersection_points.sort(key=lambda intpoint: intpoint.point.dist)
+print("dist" ,list_of_intersection_points[0].point.dist)
+list_of_intersection_points.sort(key=lambda intpoint: intpoint.totalSteps)
+print("steps", list_of_intersection_points[0].totalSteps)
 
 
 # Method 1
