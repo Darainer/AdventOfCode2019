@@ -151,9 +151,9 @@ def plot_segments(segment):
     plt.plot(x, y)
 
 # process
-#input_file = "Day3_Crossed_wires.txt"
+input_file = "Day3_Crossed_wires.txt"
 #input_file = "crossedwiretest.txt"
-input_file = "crossedwiretest2.txt"
+#input_file = "crossedwiretest2.txt"
 #input_file = "simpletest.txt"
 plot_active = True
 
@@ -182,21 +182,9 @@ for segment1 in Wire1_segments.Segment:
         if ck.dist != 0:
             list_of_intersection_points.append(ck)
 
-print(len(list_of_intersection_points))
+list_of_intersection_points.sort(key=lambda point: point.dist)
+print(list_of_intersection_points[0].dist)
 
-#plot
-
-
-#
-# print(Direction1[1].keys(), Direction1[1].items())
-#
-#
-#
-# Grid = np.ndarray(shape=[1000, 1000], dtype=GridPoint)
-# Grid.dtype
-# print(Grid[10][1])
-# for i in range(Grid[1][:]):
-#     i = GridPoint
 
 # Method 1
 
