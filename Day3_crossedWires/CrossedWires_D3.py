@@ -19,16 +19,21 @@ class Line:
     def __init__(self, origin: point_2D, end: point_2D):
         self.Origin = origin
         self.End = end
-        self.OrientationAngle = int
+        self.Angle = int
         self.check_line_orientation()
+
 
     def check_line_orientation(self):
         if self.End.x == self.Origin.x:
-            self.OrientationAngle = 90
+            if self.End.y > self.Origin.y:
+                self.Angle = 90
+            else:
+                self.Angle = -90
         elif self.End.y == self.Origin.y:
-            self.OrientationAngle = 0
-        else:
-            self.OrientationAngle = -1
+            if self.End.x > self.Origin.x:
+                self.Angle = 0
+            else:
+                self.Angle = 180
 
 class GridPoint:
     def __init__(self):
@@ -55,27 +60,37 @@ def FindMinCommonValue(p1,p2,q1,q2) -> int:
     else:
         return -1
 
+def linesareParallel(line1: Line, line2: Line) -> bool:
+    lines_are_parallel = False
+    if (line1.Angle == 90 or line1.Angle == -90) and (line2.Angle == 90 or line2 == -90):
+        lines_are_parallel = True
+    if (line1.Angle == 0 or line1.Angle == 180) and (line2.Angle == 0 or line2 == 180):
+        lines_are_parallel = True
+    else:
+        lines_are_parallel= False
+    return lines_are_parallel
+
+
 def CheckIntersection(line1: Line, line2: Line) -> point_2D:
     point = point_2D(0, 0)
-    if line1.OrientationAngle == line2.OrientationAngle:
-        # lines_are_parallel
-        if line1.OrientationAngle == 90 and line1.Origin.x == line2.Origin.x:
+    if linesareParallel(line1, line2):
+        if (line1.Angle == 90 or -90) and line1.Origin.x == line2.Origin.x:
             # lines are collinear x plane
             y_common_min = FindMinCommonValue(line1.Origin.y, line1.End.y, line2.Origin.y, line2.End.y)
             if y_common_min != -1:
                 return point_2D(line1.Origin.x, y_common_min)
-        if line1.OrientationAngle == 0 and line1.Origin.y == line2.Origin.y:
+        if (line1.Angle == 0 or 180) and line1.Origin.y == line2.Origin.y:
             # lines are collinear y plane
             x_common_min = FindMinCommonValue(line1.Origin.x, line1.End.x, line2.Origin.x, line2.End.x)
             if x_common_min != -1:
                 return point_2D(x_common_min, line1.Origin.y)
-    elif line1.OrientationAngle != line2.OrientationAngle:
+    else:
         # lines are perpendicular
-        if line1.OrientationAngle == 0 and line1.Origin.x <= line2.Origin.x <= line1.End.x:
-            if line1.Origin.x <= line2.Origin.x <= line1.End.x:
+        if (line1.Angle == 0 or 180) and line1.Origin.x <= line2.Origin.x <= line1.End.x:
+            if line2.Origin.y <= line1.Origin.y <= line2.End.y:
             # vertical line 2 is crossing horizontal line 1 at line2.x
                 return point_2D(line2.Origin.x, line1.Origin.y)
-        if line1.OrientationAngle == 90:
+        if line1.Angle == 90 or -90:
             # Horizontal line 2 is crossing vertical line 1 at line2.x
             x_common_min = FindMinCommonValue(line1.Origin.x, line1.End.x, line2.Origin.x, line2.End.x)
             y_common_min = FindMinCommonValue(line1.Origin.y, line1.End.y, line2.Origin.y, line2.End.y)
