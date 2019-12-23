@@ -15,8 +15,12 @@ class point_2D:
         new_point = point_2D(self.x + other.x, self.y + other.y)
         return new_point
 
+def steps_between_points(first: point_2D, second: point_2D) ->int:
+    steps = abs(first.x - second.x) + abs(first.y - second.y)
+    return steps
+
 class Line:
-    def __init__(self, origin: point_2D, end: point_2D, steps: int):
+    def __init__(self, origin: point_2D, end: point_2D, steps_in: int):
         self.Origin = origin
         self.End = end
         self.Angle = int
@@ -25,7 +29,7 @@ class Line:
         self.min_y = int
         self.max_y = int
         self.check_line_orientation()
-        self.steps_origin = steps
+        self.steps_origin = steps_in
 
     def check_line_orientation(self):
         if self.End.x == self.Origin.x:
@@ -144,7 +148,7 @@ class ProcessCommandsToWireSegments:
         for it in range(len(self.commands)):
             end_point = self.return_endpoint_after_command(self.commands[it], Currentpoint)
             self.Segment.append(Line(Currentpoint, end_point, steps))
-            steps += abs(end_point.dist - Currentpoint.dist) #steps at start of line
+            steps += steps_between_points(Currentpoint,end_point)
             Currentpoint = end_point
 
     def return_endpoint_after_command(self, command, origin: point_2D) -> point_2D:
@@ -170,9 +174,9 @@ def plot_segments(segment):
     plt.plot(x, y)
 
 # process
-#input_file = "Day3_Crossed_wires.txt"
+input_file = "Day3_Crossed_wires.txt"
 #input_file = "crossedwiretest.txt"
-input_file = "crossedwiretest2.txt"
+#input_file = "crossedwiretest2.txt"
 #input_file = "simpletest.txt"
 plot_active = True
 
