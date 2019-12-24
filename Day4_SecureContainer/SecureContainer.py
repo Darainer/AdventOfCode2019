@@ -16,6 +16,29 @@ def test_for_repeating_digits(digits: list)->bool:
             i = i + 1
     return False
 
+def get_diff(digits: list) -> list:
+    Diff = []
+    for i in range(1, len(digits)):
+        Diff.append(digits[i]-digits[i-1])
+    return Diff
+
+def test_for_double_digits_only(digits: list)->bool:
+# numbers are ascending
+    diff = get_diff(digits)
+    count = 0
+    for i in range(len(diff)):
+        if diff[i] == 0:
+            count += 1
+        else:
+            if count == 1:
+                return True
+            else:
+                count = 0
+        if count == 1 and i == (len(diff)-1):
+            return True
+    return False
+
+
 def test_for_ascending_digits(digits: list)->bool:
     i = 1
     while i != len(digits):
@@ -35,35 +58,25 @@ range_int =range( start_value, end_value)
 ### tests
 
 int_list = []
-test_value = 123267
+test_value = 234456
 int_list = split_int_to_list(test_value)
-#has_repeating_digits = test_for_repeating_digits(int_list)
-#has_ascending_digits = test_for_ascending_digits(int_list)
+has_repeating_digits = test_for_double_digits_only(int_list)
+
 
 ###
 potential_PWs = []
 
 for int in range_int:
     int_list = split_int_to_list(int)
-    has_repeating_digits = test_for_repeating_digits(int_list)
     has_ascending_digits = test_for_ascending_digits(int_list)
+    if has_ascending_digits: # can assume ascending in test
+        has_repeating_digits = test_for_double_digits_only(int_list)
+    else:
+        has_repeating_digits= False
     if has_ascending_digits and has_repeating_digits:
         potential_PWs.append(int)
 
 print("in range", start_value, "to", end_value)
 print("the number_of_potential_PWs =", len(potential_PWs))
 
-
-
-#run through the range
-#convert to list of int
-
-#test_1: contains two adjacent digits
-#for ind in start_value:
-    #if ind == start_value[:1]:
-
-#test 2: two adjacent digits are the same
-    #run through for each
-
-#test 3: ascending numbers
 
