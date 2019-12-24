@@ -7,33 +7,51 @@ def split_int_to_list(int_number: int) -> list:
     digit_list.reverse()
     return digit_list
 
-def test_for_repeating_digits(int_list)->bool:
+def test_for_repeating_digits(digits: list)->bool:
+    i = 1
+    while i != len(digits):
+        if digits[i] == digits[i-1]:
+            return True
+        else:
+            i = i + 1
     return False
 
-def test_for_ascending_digits(int_list)->bool:
-    return False
+def test_for_ascending_digits(digits: list)->bool:
+    i = 1
+    while i != len(digits):
+        if digits[i] >= digits[i-1]:
+            i = i + 1
+        else:
+            return False
+    return True
 
-
-#program inputs
+####
 
 start_value = 138241
 end_value = 674034
-range_int =range( start_value,end_value)
+range_int =range( start_value, end_value)
+
+
+### tests
 
 int_list = []
-int_list = split_int_to_list(start_value)
+test_value = 123267
+int_list = split_int_to_list(test_value)
+#has_repeating_digits = test_for_repeating_digits(int_list)
+#has_ascending_digits = test_for_ascending_digits(int_list)
 
-number_of_potential_PWs = int(0)
+###
+potential_PWs = []
 
 for int in range_int:
     int_list = split_int_to_list(int)
     has_repeating_digits = test_for_repeating_digits(int_list)
     has_ascending_digits = test_for_ascending_digits(int_list)
     if has_ascending_digits and has_repeating_digits:
-        number_of_potential_PWs += 1
+        potential_PWs.append(int)
 
-print("in range",start_value, "to", end_value)
-print("the number_of_potential_PWs =", number_of_potential_PWs)
+print("in range", start_value, "to", end_value)
+print("the number_of_potential_PWs =", len(potential_PWs))
 
 
 
