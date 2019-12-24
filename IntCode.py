@@ -1,16 +1,21 @@
 # intcode computer
 class IntCode:
-    def __init__(self, input, output_file):
-        if type(input) is str:
-            self.read_program_txt(input)
+    def __init__(self, input_code, output_file):
+        if type(input_code) is str:
+            self.read_program_txt(input_code)
         else: #input is a list of ints
-            self.program_codes = input
-
+            self.program_codes = input_code
         self.original_codes = list(self.program_codes) # make an initial copy
         self.output_file = output_file
-        #self.ComputeResult = self.compute_program()
-        #print(self.program_codes)
-        #print(self.ComputeResult)
+
+        self.input = -1
+        self.output = -1
+
+
+    def run_Intcode_with_input_output(self,input_int: int)->int:
+        self.input = input_int
+        self.compute_program()
+        return self.output
 
     def read_program_txt(self, input_file):
         with open(input_file, 'r') as file:
@@ -44,6 +49,12 @@ class IntCode:
             elif self.program_codes[idx] == 2:
                 self.intcode_operation_2(idx)
                 idx = idx + 4
+            elif self.program_codes[idx] == 3:
+                self.intcode_operation_3(idx, self.input)
+                idx = idx + 2
+            elif self.program_codes[idx] == 4:
+                self.intcode_operation_4(idx)
+                idx = idx + 2
             elif self.program_codes[idx] == 99:  # program finish
                 return True
             else:
@@ -60,6 +71,14 @@ class IntCode:
         idx_m2 = self.program_codes[index + 2]
         idx_mresult = self.program_codes[index + 3]
         self.program_codes[idx_mresult] = self.program_codes[idx_m1] * self.program_codes[idx_m2]
+
+    def intcode_operation_3(self,index, input :int):  # save value
+        idx_1 = self.program_codes[index + 1]
+        self.program_codes[idx_1] = input
+
+    def intcode_operation_4(self,index):            # retrieve value
+        idx_1 = self.program_codes[index + 1]
+        self.output = self.program_codes[idx_1]
 
     def write_output(self):
         f = open(self.output_file, 'w')
