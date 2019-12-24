@@ -1,7 +1,11 @@
 
-def split_int_to_list(value: int) -> list:  #assume int is 6 digit
-    list = [num1,num2,num3,num4,num5,num6]
-    return list
+def split_int_to_list(int_number: int) -> list:
+    digit_list = []
+    while int_number > 0:
+        digit_list.append(int_number % 10)
+        int_number //= 10
+    digit_list.reverse()
+    return digit_list
 
 def test_for_repeating_digits(int_list)->bool:
     return False
