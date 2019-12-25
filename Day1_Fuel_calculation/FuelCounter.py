@@ -1,7 +1,7 @@
 
 def calculatefuel(module_mass):
 #    fuel required for a module, take its mass, divide by three, round down, and subtract 2.
-    fuel = (module_mass / 3)
+    fuel = (module_mass // 3) -2
     return fuel
 
 def CalculateModuleFuel(fuelslice):
