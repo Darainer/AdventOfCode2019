@@ -50,19 +50,30 @@ class IntCode:
     def compute_program(self) -> bool:
         idx = 0
         while idx <= len(self.program_codes):
+            #print(idx)  #for debug
             program_code_list = split_int_to_list(self.program_codes[idx])
-            if program_code_list[-1] == 1:
+            if program_code_list[-1] == 1:                              # Addition
                 self.intcode_operation_1(idx,program_code_list)
                 idx = idx + 4
-            elif program_code_list[-1] == 2:
+            elif program_code_list[-1] == 2:                            # Multiplication
                 self.intcode_operation_2(idx,program_code_list)
                 idx = idx + 4
-            elif program_code_list[-1] == 3:
+            elif program_code_list[-1] == 3:                            # input
                 self.intcode_operation_3(idx, self.input)
                 idx = idx + 2
-            elif program_code_list[-1] == 4:
+            elif program_code_list[-1] == 4:                            # return
                 self.intcode_operation_4(idx, program_code_list)
                 idx = idx + 2
+            elif program_code_list[-1] == 5:                            # jmp if True
+                idx = self.intcode_operation_5(idx, program_code_list)
+            elif program_code_list[-1] == 6:                            # jmp if False
+                idx = self.intcode_operation_6(idx, program_code_list)
+            elif program_code_list[-1] == 7:                            # compare
+                self.intcode_operation_7(idx,program_code_list)
+                idx = idx + 4
+            elif program_code_list[-1] == 8:                            # is Equal
+                self.intcode_operation_8(idx,program_code_list)
+                idx = idx + 4
             elif program_code_list[-1] and program_code_list[-2] == 9:  # code 99 program finish
                 return True
             else:
@@ -86,7 +97,7 @@ class IntCode:
             arg_2 = self.program_codes[idx_m2]
         elif opmode_param2 ==1:
             arg_2 = self.program_codes[index + 2]
-        return [arg_1,arg_2]
+        return [arg_1, arg_2]
 
     def intcode_operation_1(self, index, program_code_list: list) -> bool:  #addition
         [arg1, arg2] =self.get_op_arguments(index, program_code_list)
@@ -107,6 +118,39 @@ class IntCode:
         self.output = arg1
         print("diagnostic result", self.output)
 
+    def intcode_operation_5(self,index, program_code_list: list)->int:           # jump if Nonzero
+        [arg1, arg2] = self.get_op_arguments(index, program_code_list)
+        if arg1 != 0:
+            idx = arg2
+        else:
+            idx = index + 3
+        return idx
+
+    def intcode_operation_6(self, index, program_code_list: list)->int:           # jump if False
+        [arg1, arg2] = self.get_op_arguments(index, program_code_list)
+        if arg1 == 0:
+            idx = arg2
+        else:
+            idx = index + 3
+        return idx
+
+    def intcode_operation_7(self, index, program_code_list: list) -> bool:  #less than
+        [arg1, arg2] =self.get_op_arguments(index, program_code_list)
+        idx_result = self.program_codes[index + 3]
+        if arg1 < arg2:
+            self.program_codes[idx_result] = 1
+        else:
+            self.program_codes[idx_result] = 0
+
+    def intcode_operation_8(self, index, program_code_list: list)-> bool:  # is equals
+        [arg1, arg2] = self.get_op_arguments(index, program_code_list)
+        idx_result = self.program_codes[index + 3]
+        if arg1 == arg2:
+            self.program_codes[idx_result] = 1
+        else:
+            self.program_codes[idx_result] = 0
+
+# todo: tests for all intcode puzzles, can prob delete this
     def write_output(self):
         f = open(self.output_file, 'w')
         output_list = [str(i) for i in self.program_codes]
