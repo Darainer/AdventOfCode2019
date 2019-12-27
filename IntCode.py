@@ -9,13 +9,13 @@ def split_int_to_list(int_number: int) -> list:
     return digit_list
 
 class IntCode:
-    def __init__(self, input_code, output_file):
+    def __init__(self, input_code):
         if type(input_code) is str:
             self.read_program_txt(input_code)
         else: #input is a list of ints
             self.program_codes = input_code
         self.original_codes = list(self.program_codes) # make an initial copy
-        self.output_file = output_file
+        #self.output_file = output_file
         self.input = -1
         self.output = -1
 
@@ -30,13 +30,13 @@ class IntCode:
             program_codes = program_input.split(',')
             self.program_codes = [int(i) for i in program_codes]
 
-    def find_inputs_for_computeResult(self,inputRangemin,inputRangemax,computeResult):
+    def find_inputs_for_computeResult(self,inputRangemin,inputRangemax,computeResult)->int:
         for input1 in range(inputRangemin, inputRangemax, 1):
             for input2 in range(inputRangemin, inputRangemax, 1):
                 result = self.compute_with_changed_inputs(input1, input2)
                 if result == computeResult:
                     print("noun", input1, "verb", input2, "100*noun + verb ", (100*input1+input2))
-                    return 0
+                    return (100*input1+input2)
                 else:
                     self.program_codes = list(self.original_codes)
 
@@ -151,14 +151,15 @@ class IntCode:
             self.program_codes[idx_result] = 0
 
 # todo: tests for all intcode puzzles, can prob delete this
-    def write_output(self):
-        f = open(self.output_file, 'w')
-        output_list = [str(i) for i in self.program_codes]
-        for i in range(len(output_list)):
-            f.write(output_list[i])
-            if i != len(output_list)-1:
-                f.write(",")
-        f.close()
+
+#     def write_output(self):
+#         f = open(self.output_file, 'w')
+#         output_list = [str(i) for i in self.program_codes]
+#         for i in range(len(output_list)):
+#             f.write(output_list[i])
+#             if i != len(output_list)-1:
+#                 f.write(",")
+#         f.close()
 
     def __del__(self):
         print('Destructor called, Instance deleted.')
