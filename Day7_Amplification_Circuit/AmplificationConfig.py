@@ -1,4 +1,5 @@
 from IntCode import IntCode
+import itertools
 
 # Here are some example programs:
 #
@@ -20,6 +21,18 @@ from IntCode import IntCode
 input_program = [3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]
 Amplist = []
 phase_codes = [0,1,2,3,4]
+Phase_Combinations = [",".join(map(str, comb)) for comb in itertools.combinations(phase_codes, 5)]
+Phase_per = [",".join(map(str, comb)) for comb in itertools.permutations(phase_codes, 5)]
+Phase_per2 = [list.append((*comb)) for comb in itertools.permutations(phase_codes, 5)]
+
+#itertools.permutations(iterable[, r])
+Phase_Permutations = []
+#p = itertools.permutations(phase_codes[, 5])
+
+i = 0
+for permutation in itertools.permutations(phase_codes):
+    Phase_Permutations[i] = permutation
+    i += 1
 
 #phase_codes.
 i = 0
