@@ -16,13 +16,25 @@ class IntCode:
             self.program_codes = input_code
         self.original_codes = list(self.program_codes) # make an initial copy
         #self.output_file = output_file
-        self.input = -1
+        self.inputIdx = 0
+        self.inputList = []
         self.output = -1
 
-
-    def run_Intcode_with_input(self,input_int: int):
-        self.input = input_int
+    def run_Intcode_with_input(self, input):
+        if type(input) == int:
+            self.inputList.append(input)
+        else:
+            self.inputList = input
         self.compute_program()
+
+    def run_Intcode_with_input_output(self, input)->int:
+        if type(input) == int:
+            self.inputList.append(input)
+        else:
+            self.inputList = input
+        self.compute_program()
+        self.inputIdx = 0 #reset
+        return self.output
 
     def read_program_txt(self, input_file):
         with open(input_file, 'r') as file:
@@ -59,7 +71,8 @@ class IntCode:
                 self.intcode_operation_2(idx,program_code_list)
                 idx = idx + 4
             elif program_code_list[-1] == 3:                            # input
-                self.intcode_operation_3(idx, self.input)
+                self.intcode_operation_3(idx, self.inputList[self.inputIdx])
+                self.inputIdx += 1
                 idx = idx + 2
             elif program_code_list[-1] == 4:                            # return
                 self.intcode_operation_4(idx, program_code_list)
@@ -116,7 +129,7 @@ class IntCode:
     def intcode_operation_4(self, index,program_code_list: list):            # retrieve value
         [arg1, arg2] = self.get_op_arguments(index, program_code_list)
         self.output = arg1
-        print("diagnostic result", self.output)
+        #print("diagnostic result", self.output)
 
     def intcode_operation_5(self,index, program_code_list: list)->int:           # jump if Nonzero
         [arg1, arg2] = self.get_op_arguments(index, program_code_list)
@@ -149,17 +162,3 @@ class IntCode:
             self.program_codes[idx_result] = 1
         else:
             self.program_codes[idx_result] = 0
-
-# todo: tests for all intcode puzzles, can prob delete this
-
-#     def write_output(self):
-#         f = open(self.output_file, 'w')
-#         output_list = [str(i) for i in self.program_codes]
-#         for i in range(len(output_list)):
-#             f.write(output_list[i])
-#             if i != len(output_list)-1:
-#                 f.write(",")
-#         f.close()
-
-    def __del__(self):
-        print('Destructor called, Instance deleted.')
