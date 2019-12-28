@@ -13,7 +13,7 @@ def CalculateMaxAmplification(inputprogram,phase_codes)->int:
     Phase_code_permutations = list(itertools.permutations(phase_codes))
     for permutation in Phase_code_permutations:
         for Amplifier in Amplist:
-            ThrusterOutput += Amplifier.run_Intcode_with_input_output([permutation[i], ThrusterOutput])
+            ThrusterOutput = Amplifier.run_Intcode_with_input_output([permutation[i], ThrusterOutput])
             i += 1
         TotalAmplification.append([ThrusterOutput, permutation])
         i = 0

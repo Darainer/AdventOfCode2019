@@ -5,7 +5,7 @@ phase_codes = [0, 1, 2, 3, 4]
 
 class Test_program1(unittest.TestCase):
     def test_something(self):
-        input_program = [3, 15, 3, 16, 1002, 16, 10, 16, 1, 16, 15, 15, 4, 15, 99, 0, 0]
+        input_program = [3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]
         Max_Thruster_output = CalculateMaxAmplification(input_program, phase_codes)
         print('Max_Thruster_output',Max_Thruster_output)
         self.assertEqual(43210, Max_Thruster_output)
@@ -29,7 +29,7 @@ class CompleteProgram(unittest.TestCase):
         input_program = 'Day7_AMP_input_program.txt'
         Max_Thruster_output = CalculateMaxAmplification(input_program, phase_codes)
         print('Max_Thruster_output',  Max_Thruster_output)
-        self.assertEqual(65210, Max_Thruster_output)
+        self.assertEqual(225056, Max_Thruster_output)
 
 if __name__ == '__main__':
     unittest.main()

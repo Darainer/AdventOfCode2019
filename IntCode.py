@@ -28,12 +28,15 @@ class IntCode:
         self.compute_program()
 
     def run_Intcode_with_input_output(self, input)->int:
+        self.output = -1
         if type(input) == int:
             self.inputList.append(input)
         else:
             self.inputList = input
         self.compute_program()
-        self.inputIdx = 0 #reset
+        # reset
+        self.inputIdx = 0
+        self.program_codes = list(self.original_codes)
         return self.output
 
     def read_program_txt(self, input_file):
