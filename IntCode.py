@@ -19,6 +19,9 @@ class IntCode:
         self.inputIdx = 0
         self.inputList = []
         self.output = -1
+        self.isActive = True
+        self.feedback_mode = False
+        self.program_idx_pointer = 0
 
     def run_Intcode_with_input(self, input):
         if type(input) == int:
@@ -28,16 +31,35 @@ class IntCode:
         self.compute_program()
 
     def run_Intcode_with_input_output(self, input)->int:
-        self.output = -1
+        self.isActive = True
+
         if type(input) == int:
             self.inputList.append(input)
+        elif self.feedback_mode:
+            for i in input:
+                self.inputList.append(i)
         else:
             self.inputList = input
         self.compute_program()
-        # reset
-        self.inputIdx = 0
-        self.program_codes = list(self.original_codes)
+
+        if not self.feedback_mode:
+            self.inputIdx = 0
+
         return self.output
+
+    def setFeedbackmode(self,FeedbackMode:bool):
+        self.feedback_mode = FeedbackMode
+
+    def isIntcodeActive(self) -> bool:
+        return self.isActive
+
+    def reset(self):
+        self.program_codes = list(self.original_codes)
+        self.inputIdx = 0
+        self.program_idx_pointer = 0
+        self.inputList = []
+        self.output = -1
+        self.isActive = True
 
     def read_program_txt(self, input_file):
         with open(input_file, 'r') as file:
@@ -63,7 +85,7 @@ class IntCode:
 
 
     def compute_program(self) -> bool:
-        idx = 0
+        idx = self.program_idx_pointer
         while idx <= len(self.program_codes):
             #print(idx)  #for debug
             program_code_list = split_int_to_list(self.program_codes[idx])
@@ -80,6 +102,9 @@ class IntCode:
             elif program_code_list[-1] == 4:                            # return
                 self.intcode_operation_4(idx, program_code_list)
                 idx = idx + 2
+                if self.feedback_mode:
+                    self.program_idx_pointer = idx
+                    return
             elif program_code_list[-1] == 5:                            # jmp if True
                 idx = self.intcode_operation_5(idx, program_code_list)
             elif program_code_list[-1] == 6:                            # jmp if False
@@ -91,9 +116,9 @@ class IntCode:
                 self.intcode_operation_8(idx,program_code_list)
                 idx = idx + 4
             elif program_code_list[-1] and program_code_list[-2] == 9:  # code 99 program finish
-                return True
-            else:
-                return False
+                self.isActive = False
+                return
+
 
     def get_op_arguments(self, index, program_code_list: list) -> list:
         #can be just a single opcode if others are all leading zeros
