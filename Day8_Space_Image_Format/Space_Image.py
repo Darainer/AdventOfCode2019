@@ -9,9 +9,10 @@ with open(input_file, 'r') as file:
 
 # create Imagelayer representation (deserialization)
 def CompareImageLayers(TopLayer, ImageLayer)->list:
+    newTopLayer = []
     for row_index in range(len(ImageLayer)):
-        TopLayer[row_index] = compareRowStr(TopLayer[row_index],ImageLayer[row_index])
-    return TopLayer
+        newTopLayer.append(compareRowStr(TopLayer[row_index],ImageLayer[row_index]))
+    return newTopLayer
 
 def compareRowStr(TopLayer_Row, ImageLayer_Row)-> str:
     mystr = ''
@@ -22,11 +23,11 @@ def compareRowStr(TopLayer_Row, ImageLayer_Row)-> str:
 
 def determine_visable_pixel_value( NextLayerPixelValue: str, TopValue: str)-> str:
     #assuming looping through from top
-    if (TopValue == '2'):
+    if TopValue == '2':
        return NextLayerPixelValue
-    elif(TopValue =='1'):
+    elif TopValue =='1':
        return TopValue
-    elif (TopValue == '0'):
+    elif TopValue == '0':
         return TopValue
 
 Char_Idx = 0
@@ -65,27 +66,14 @@ for pixel_i in range(0, len(ImageLayers[0])):
         for imageLayer in ImageLayers:
             pixelList[pixel_i][pixel_j].append(imageLayer[pixel_i][pixel_j])
 
+
+
 # part B 2
 TopLayer = ImageLayers[0].copy()
-for ImageLayer in range(1,len(ImageLayers)):
+for ImageLayer in range(1,len(ImageLayers) ):
     TopLayer = CompareImageLayers(TopLayer, ImageLayers[ImageLayer])
-    #TopLayer.__iter__().__next__()
 for row in range(len(TopLayer)):
-    TopLayer[row].replace('2','*')
-print(TopLayer)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-for pixel_layers in pixelList:
-    pixel_layers
+    TopLayer[row] = TopLayer[row].replace('0',' ')
+    TopLayer[row] = TopLayer[row].replace('1', '#')
+    TopLayer[row] = TopLayer[row].replace('2', ' ')
+    print(TopLayer[row])
