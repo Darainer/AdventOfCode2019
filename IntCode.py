@@ -1,5 +1,8 @@
 # intcode computer
 
+from itertools import repeat
+
+
 def split_int_to_list(int_number: int) -> list:
     digit_list = []
     while int_number > 0:
@@ -13,15 +16,17 @@ class IntCode:
         if type(input_code) is str:
             self.read_program_txt(input_code)
         else: #input is a list of ints
-            self.program_codes = input_code
+            self.program_codes = list(input_code)
+        self.append_memory_to_program()
         self.original_codes = list(self.program_codes) # make an initial copy
         #self.output_file = output_file
         self.inputIdx = 0
         self.inputList = []
-        self.output = -1
+        self.output = [-1]
         self.isActive = True
         self.feedback_mode = False
         self.program_idx_pointer = 0
+        self.relative_base_idx = 0
 
     def run_Intcode_with_input(self, input):
         if type(input) == int:
@@ -30,7 +35,7 @@ class IntCode:
             self.inputList = input
         self.compute_program()
 
-    def run_Intcode_with_input_output(self, input)->int:
+    def run_Intcode_with_input_output(self, input):
         self.isActive = True
 
         if type(input) == int:
@@ -45,7 +50,10 @@ class IntCode:
         if not self.feedback_mode:
             self.inputIdx = 0
 
-        return self.output
+        if len(self.output)>1:
+            return self.output
+        else:
+            return self.output[0]
 
     def setFeedbackmode(self,FeedbackMode:bool):
         self.feedback_mode = FeedbackMode
@@ -58,7 +66,7 @@ class IntCode:
         self.inputIdx = 0
         self.program_idx_pointer = 0
         self.inputList = []
-        self.output = -1
+        self.output = [-1]
         self.isActive = True
 
     def read_program_txt(self, input_file):
@@ -66,6 +74,10 @@ class IntCode:
             program_input = file.readline()
             program_codes = program_input.split(',')
             self.program_codes = [int(i) for i in program_codes]
+
+    def append_memory_to_program(self):
+        zeros = list(repeat(0, 10000))
+        self.program_codes += zeros
 
     def find_inputs_for_computeResult(self,inputRangemin,inputRangemax,computeResult)->int:
         for input1 in range(inputRangemin, inputRangemax, 1):
@@ -87,7 +99,7 @@ class IntCode:
     def compute_program(self) -> bool:
         idx = self.program_idx_pointer
         while idx <= len(self.program_codes):
-            #print(idx)  #for debug
+            print(idx)  #for debug
             program_code_list = split_int_to_list(self.program_codes[idx])
             if program_code_list[-1] == 1:                              # Addition
                 self.intcode_operation_1(idx,program_code_list)
@@ -115,30 +127,51 @@ class IntCode:
             elif program_code_list[-1] == 8:                            # is Equal
                 self.intcode_operation_8(idx,program_code_list)
                 idx = idx + 4
+            elif program_code_list[-1] == 9 and program_code_list[-2] != 9:                            # is Equal
+                self.intcode_operation_9(idx,program_code_list)
+                idx = idx + 2
             elif program_code_list[-1] and program_code_list[-2] == 9:  # code 99 program finish
                 self.isActive = False
                 return
 
+    def opcode_has_second_parameter(self, opcode :int)-> bool:
+        if opcode in [1, 2, 3, 5, 6, 7, 8]:
+            return True
+        elif opcode in [4, 9, 99]:
+            return False
 
     def get_op_arguments(self, index, program_code_list: list) -> list:
         #can be just a single opcode if others are all leading zeros
         arg_2 = 0
-        opmode_param1 = opmode_param2 = 0
+        opmode_param1 = opmode_param2 = 0  # default to zero (a leading zero is omitted)
+        #determine instruction opmode parameters
         if len(program_code_list)>=3:
             opmode_param1 = program_code_list[-3]
         if len(program_code_list)>=4:
             opmode_param2 = program_code_list[-4]
-        if opmode_param1 == 0:
+        # get
+        if opmode_param1 == 0:                      # position mode
             idx_m1 = self.program_codes[index + 1]
             arg_1 = self.program_codes[idx_m1]
-        elif opmode_param1 ==1:
+        elif opmode_param1 ==1:                     # immediate mode
             arg_1 = self.program_codes[index + 1]
-        if opmode_param2 == 0 and (program_code_list[-1] != 4):
-            idx_m2 = self.program_codes[index + 2]
-            arg_2 = self.program_codes[idx_m2]
-        elif opmode_param2 ==1:
-            arg_2 = self.program_codes[index + 2]
-        return [arg_1, arg_2]
+        elif opmode_param1 ==2:                     # relative mode
+            idx_m1 = self.program_codes[index + 1]
+            arg_1 = self.program_codes[self.relative_base_idx + idx_m1]
+        if self.opcode_has_second_parameter(program_code_list[-1]):
+            if opmode_param2 == 0:
+                idx_m2 = self.program_codes[index + 2]
+                arg_2 = self.program_codes[idx_m2]
+            elif opmode_param2 ==1:
+                arg_2 = self.program_codes[index + 2]
+            elif opmode_param2 == 2:
+                idx_m2 = self.program_codes[index + 2]
+                arg_2 = self.program_codes[idx_m2]
+            return [arg_1, arg_2]
+        else:
+            return [arg_1]
+
+
 
     def intcode_operation_1(self, index, program_code_list: list) -> bool:  #addition
         [arg1, arg2] =self.get_op_arguments(index, program_code_list)
@@ -155,8 +188,11 @@ class IntCode:
         self.program_codes[idx_result] = input
 
     def intcode_operation_4(self, index,program_code_list: list):            # retrieve value
-        [arg1, arg2] = self.get_op_arguments(index, program_code_list)
-        self.output = arg1
+        [arg1] = self.get_op_arguments(index, program_code_list)
+        if self.output[0] == -1:
+            self.output[0] = arg1
+        else:
+            self.output.append(arg1)
         #print("diagnostic result", self.output)
 
     def intcode_operation_5(self,index, program_code_list: list)->int:           # jump if Nonzero
@@ -190,3 +226,7 @@ class IntCode:
             self.program_codes[idx_result] = 1
         else:
             self.program_codes[idx_result] = 0
+
+    def intcode_operation_9(self,index, program_code_list: list):
+        [arg1] = self.get_op_arguments(index, program_code_list)
+        self.relative_base_idx += arg1
