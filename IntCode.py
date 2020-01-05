@@ -37,7 +37,7 @@ class IntCode:
 
     def run_Intcode_with_input_output(self, input):
         self.isActive = True
-
+        self.output = [-1]
         if type(input) == int:
             self.inputList.append(input)
         elif self.feedback_mode:
@@ -50,10 +50,7 @@ class IntCode:
         if not self.feedback_mode:
             self.inputIdx = 0
 
-        if len(self.output)>1:
-            return self.output
-        else:
-            return self.output[0]
+        return self.output
 
     def setFeedbackmode(self,FeedbackMode:bool):
         self.feedback_mode = FeedbackMode
@@ -76,7 +73,7 @@ class IntCode:
             self.program_codes = [int(i) for i in program_codes]
 
     def append_memory_to_program(self):
-        zeros = list(repeat(0, 10000))
+        zeros = list(repeat(0, 10000000))
         self.program_codes += zeros
 
     def find_inputs_for_computeResult(self,inputRangemin,inputRangemax,computeResult)->int:
@@ -99,7 +96,7 @@ class IntCode:
     def compute_program(self) -> bool:
         idx = self.program_idx_pointer
         while idx <= len(self.program_codes):
-            print(idx)  #for debug
+            #print(idx)  #for debug
             program_code_list = split_int_to_list(self.program_codes[idx])
             if program_code_list[-1] == 1:                              # Addition
                 self.intcode_operation_1(idx,program_code_list)
@@ -127,12 +124,13 @@ class IntCode:
             elif program_code_list[-1] == 8:                            # is Equal
                 self.intcode_operation_8(idx,program_code_list)
                 idx = idx + 4
-            elif program_code_list[-1] == 9 and program_code_list[-2] != 9:                            # is Equal
-                self.intcode_operation_9(idx,program_code_list)
-                idx = idx + 2
-            elif program_code_list[-1] and program_code_list[-2] == 9:  # code 99 program finish
-                self.isActive = False
-                return
+            elif program_code_list[-1] ==9:
+                if len(program_code_list) >=2 and program_code_list[-2] == 9:  # code 99 program finish
+                    self.isActive = False
+                    return
+                else:                        # shift relative index
+                    self.intcode_operation_9(idx,program_code_list)
+                    idx = idx + 2
 
     def opcode_has_second_parameter(self, opcode :int)-> bool:
         if opcode in [1, 2, 3, 5, 6, 7, 8]:
