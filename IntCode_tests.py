@@ -26,7 +26,7 @@ class Day5_part1(unittest.TestCase):
         Intcoder = IntCode(Input_day5)
         Intcoder.run_Intcode_with_input(1)
         ret = Intcoder.output
-        self.assertEqual(ret, 7988899)
+        self.assertEqual(7988899,ret[-1])
 
 class Day5_part2(unittest.TestCase):
     def test_something(self):
@@ -34,7 +34,7 @@ class Day5_part2(unittest.TestCase):
         Intcoder = IntCode(Input_day5)
         Intcoder.run_Intcode_with_input(5)
         ret = Intcoder.output
-        self.assertEqual(ret, 13758663)
+        self.assertEqual(13758663, ret[-1])
 
 class Day7_part1(unittest.TestCase):
     def test_something(self):
@@ -51,13 +51,28 @@ class Day9_part1testcase(unittest.TestCase):
         program_output = myIntCoder.run_Intcode_with_input_output([])
         self.assertEqual(input_program, program_output)
 
-# class Day9_part1(unittest.TestCase):
-#     def test_something(self):
-#         input_program = 'Day_9_Sensor_Boost/Day9_input.txt'
-#         myIntCoder = IntCode(input_program)
-#         program_output = myIntCoder.run_Intcode_with_input_output([])
-#         print('Boost Keycode',  program_output)
-#         self.assertEqual(225056, program_output)
+
+class Day9_part1testcase2(unittest.TestCase):
+    def test_something(self):
+        input_program = [1102,34915192,34915192,7,4,7,99,0]
+        myIntCoder = IntCode(input_program)
+        program_output = myIntCoder.run_Intcode_with_input_output([])
+        self.assertEqual(len(str(abs(program_output[0]))),16)
+
+class Day9_part1testcase3(unittest.TestCase):
+    def test_something(self):
+        input_program = [104,1125899906842624,99]
+        myIntCoder = IntCode(input_program)
+        program_output = myIntCoder.run_Intcode_with_input_output([])
+        self.assertEqual(1125899906842624,program_output[0])
+
+class Day9_part1(unittest.TestCase):
+    def test_something(self):
+        input_program = 'Day_9_Sensor_Boost/Day9_input.txt'
+        myIntCoder = IntCode(input_program)
+        program_output = myIntCoder.run_Intcode_with_input_output(1)
+        print('Boost Keycode',  program_output)
+        self.assertEqual(int, type(program_output[0]))
 
 if __name__ == '__main__':
     unittest.main()
