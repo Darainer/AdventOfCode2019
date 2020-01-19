@@ -1,5 +1,5 @@
 from IntCode import IntCode
-import itertools
+from itertools import permutations
 
 def CalculateMaxAmplification(inputprogram,phase_codes)->int:
     Amplist = []
@@ -10,7 +10,7 @@ def CalculateMaxAmplification(inputprogram,phase_codes)->int:
     TotalAmplification = []
     ThrusterOutput = 0
 
-    Phase_code_permutations = list(itertools.permutations(phase_codes))
+    Phase_code_permutations = list(permutations(phase_codes))
     for permutation in Phase_code_permutations:
         for Amplifier in Amplist:
             [ThrusterOutput]= Amplifier.run_Intcode_with_input_output([permutation[i], ThrusterOutput])
@@ -33,7 +33,7 @@ def FeedbackAmplification(inputprogram,phase_codes)->int:
 
     TotalAmplification = []
     ThrusterOutput = 0
-    Phase_code_permutations = list(itertools.permutations(phase_codes))
+    Phase_code_permutations = list(permutations(phase_codes))
     for permutation in Phase_code_permutations:
         i = 0
         for Amplifier in Amplist:

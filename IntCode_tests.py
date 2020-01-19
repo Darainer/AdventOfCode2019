@@ -1,6 +1,7 @@
 import unittest
 from IntCode import IntCode
-from Day7_Amplification_Circuit.AmplificationConfig import CalculateMaxAmplification
+from Day2_IntCode.Day2_1202_Program_Alarm import find_inputs_for_computeResult
+from Day7_Amplification_Circuit.AmplificationConfig import CalculateMaxAmplification, FeedbackAmplification
 
 class Day2_part1(unittest.TestCase):
     def test_something(self):
@@ -10,14 +11,14 @@ class Day2_part1(unittest.TestCase):
         myIntcoder.program_codes[2] = 2
         myIntcoder.compute_program()
         ret = myIntcoder.program_codes[0]
-        self.assertEqual(ret, 4138658)
+        self.assertEqual(4138658, ret )
 
 
 class Day2_part2(unittest.TestCase):
     def test_something(self):
         input_program = 'Day2_IntCode/Real_program_codes.txt'
         myIntcoder = IntCode(input_program)
-        ret = myIntcoder.find_inputs_for_computeResult(0, 99, 19690720)
+        ret = find_inputs_for_computeResult(myIntcoder,0, 99, 19690720)
         self.assertEqual(ret, 7264)
 
 class Day5_part1(unittest.TestCase):
@@ -43,6 +44,14 @@ class Day7_part1(unittest.TestCase):
         Max_Thruster_output = CalculateMaxAmplification(input_program, phase_codes)
         print('Max_Thruster_output',  Max_Thruster_output)
         self.assertEqual(225056, Max_Thruster_output)
+
+class Day7Partb_Complete_program(unittest.TestCase):
+    def test_something(self):
+        phase_codes = [5, 6, 7, 8, 9]
+        input_program = 'Day7_Amplification_Circuit/Day7_AMP_input_program.txt'
+        Max_Thruster_output = FeedbackAmplification(input_program, phase_codes)
+        print('Max_Thruster_output', Max_Thruster_output)
+        self.assertEqual(14260332, Max_Thruster_output)
 
 class Day9_part1testcase(unittest.TestCase):
     def test_something(self):

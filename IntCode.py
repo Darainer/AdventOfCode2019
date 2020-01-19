@@ -35,6 +35,7 @@ class IntCode:
             self.inputList = input
         self.compute_program()
 
+    #todo refactor to not need feedback mode
     def run_Intcode_with_input_output(self, input):
         self.isActive = True
         self.output = [-1]
@@ -76,41 +77,24 @@ class IntCode:
         zeros = list(repeat(0, 10000000))
         self.program_codes += zeros
 
-    def find_inputs_for_computeResult(self,inputRangemin,inputRangemax,computeResult)->int:
-        for input1 in range(inputRangemin, inputRangemax, 1):
-            for input2 in range(inputRangemin, inputRangemax, 1):
-                result = self.compute_with_changed_inputs(input1, input2)
-                if result == computeResult:
-                    print("noun", input1, "verb", input2, "100*noun + verb ", (100*input1+input2))
-                    return (100*input1+input2)
-                else:
-                    self.program_codes = list(self.original_codes)
-
-    def compute_with_changed_inputs(self, input1, input2) -> int:
-        self.program_codes[1] = input1
-        self.program_codes[2] = input2
-        self.compute_program()
-        return self.program_codes[0]
-
-
     def compute_program(self) -> bool:
         idx = self.program_idx_pointer
         while idx <= len(self.program_codes):
-            #print(idx)  #for debug
+            print(idx)  #for debug
             program_code_list = split_int_to_list(self.program_codes[idx])
             if program_code_list[-1] == 1:                              # Addition
                 self.intcode_operation_1(idx,program_code_list)
-                idx = idx + 4
+                idx += 4
             elif program_code_list[-1] == 2:                            # Multiplication
                 self.intcode_operation_2(idx,program_code_list)
-                idx = idx + 4
+                idx += 4
             elif program_code_list[-1] == 3:                            # input
                 self.intcode_operation_3(idx, program_code_list, self.inputList[self.inputIdx])
                 self.inputIdx += 1
-                idx = idx + 2
+                idx += 2
             elif program_code_list[-1] == 4:                            # return
                 self.intcode_operation_4(idx, program_code_list)
-                idx = idx + 2
+                idx += 2
                 if self.feedback_mode:
                     self.program_idx_pointer = idx
                     return
@@ -120,131 +104,89 @@ class IntCode:
                 idx = self.intcode_operation_6(idx, program_code_list)
             elif program_code_list[-1] == 7:                            # compare
                 self.intcode_operation_7(idx,program_code_list)
-                idx = idx + 4
+                idx += 4
             elif program_code_list[-1] == 8:                            # is Equal
                 self.intcode_operation_8(idx,program_code_list)
-                idx = idx + 4
+                idx += 4
             elif program_code_list[-1] ==9:
-                if len(program_code_list) >=2 and program_code_list[-2] == 9:  # code 99 program finish
+                if len(program_code_list) >= 2 and program_code_list[-2] == 9:  # code 99 program finish
                     self.isActive = False
                     return
-                else:                        # shift relative index
-                    self.intcode_operation_9(idx,program_code_list)
-                    idx = idx + 2
+                else:                                                      # shift relative index
+                    self.intcode_operation_9(idx, program_code_list)
+                    idx += 2
 
-    def opcode_has_second_parameter(self, opcode :int)-> bool:
-        if opcode in [1, 2, 5, 6, 7, 8]:
-            return True
-        elif opcode in [3, 4, 9, 99]:
-            return False
-
-    def opcode_has_third_parameter(self, opcode :int)-> bool:
-        if opcode in [1, 2]:
-            return True
-        elif opcode in [3, 4, 5, 6, 7, 8, 9, 99]:
-            return False
-
-
-
-    def get_op_arguments(self, index, program_code_list: list) -> list:
-        #can be just a single opcode if others are all leading zeros
+    def get_opcode_arguments(self, instruction_idx, program_code_list: list, no_of_parameters) -> list:
         arglist=[]
-        opmode_param1 = opmode_param2 = opmode_param3 = 0  # default to zero (a leading zero is omitted)
-        #determine instruction opmode parameters
-        if len(program_code_list)>=3:
-            opmode_param1 = program_code_list[-3]
-        if len(program_code_list)>=4:
-            opmode_param2 = program_code_list[-4]
-        if len(program_code_list)==5:
-            opmode_param3 = program_code_list[-5]
+        opmodes = [0, 0, 0]  # default to zero (a leading zero is omitted)
+        if len(program_code_list) >= 3:
+            opmodes[0] = program_code_list[-3]
+            if len(program_code_list) >= 4:
+                opmodes[1] = program_code_list[-4]
+                if len(program_code_list) == 5:
+                    opmodes[2] = program_code_list[-5]
 
-        if opmode_param1 == 0:                      # position mode
-            idx_m1 = self.program_codes[index + 1]
-            arg_1 = self.program_codes[idx_m1]
-        elif opmode_param1 ==1:                     # immediate mode
-            arg_1 = self.program_codes[index + 1]
-        elif opmode_param1 ==2:                     # relative mode
-            idx_m1 = self.program_codes[index + 1]
-            arg_1 = self.program_codes[self.relative_base_idx + idx_m1]
-        arglist.append(arg_1)
-        if self.opcode_has_second_parameter(program_code_list[-1]):
-            if opmode_param2 == 0:
-                idx_m2 = self.program_codes[index + 2]
-                arg_2 = self.program_codes[idx_m2]
-            elif opmode_param2 ==1:
-                arg_2 = self.program_codes[index + 2]
-            elif opmode_param2 == 2:
-                idx_m2 = self.program_codes[index + 2]
-                arg_2 = self.program_codes[idx_m2]
-            arglist.append(arg_2)
-        if self.opcode_has_third_parameter(program_code_list[-1]):
-            if opmode_param3 == 0:
-                idx_m3 = self.program_codes[index + 3]
-                arg_3 = self.program_codes[idx_m3]
-            elif opmode_param3 ==1:
-                arg_3 = self.program_codes[index + 3]
-            elif opmode_param3 == 2:
-                idx_m3 = self.program_codes[index + 3]
-                arg_3 = self.program_codes[idx_m3]
-            arglist.append(arg_3)
+        for parameter_int in range(1, no_of_parameters+1):
+            if opmodes[parameter_int-1] == 0:                       # position mode
+                arg_idx = self.program_codes[instruction_idx + parameter_int]
+                arg = self.program_codes[arg_idx]
+            elif opmodes[parameter_int-1] == 1:                     # immediate mode
+                arg = self.program_codes[instruction_idx + parameter_int]
+            elif opmodes[parameter_int-1] == 2:                     # relative mode
+                arg_idx = self.program_codes[instruction_idx + parameter_int]
+                arg = self.program_codes[self.relative_base_idx + arg_idx]
+            arglist.append(arg)
         return arglist
 
     def intcode_operation_1(self, index, program_code_list: list):  #addition
-        arglist =self.get_op_arguments(index, program_code_list)
-        idx_result = self.program_codes[index + 3]
-        self.program_codes[arglist[2]] = arglist[0] + arglist[1]
+        [arg1, arg2, arg3] = self.get_opcode_arguments(index, program_code_list, 3)
+        self.program_codes[arg3] = arg1 + arg2
 
     def intcode_operation_2(self, index, program_code_list: list):  #multiplication
-        arglist = self.get_op_arguments(index, program_code_list)
-        self.program_codes[arglist[2]] = arglist[0] * arglist[1]   # arg3 = arg1*arg2
+        [arg1, arg2, arg3] = self.get_opcode_arguments(index, program_code_list, 3)
+        self.program_codes[arg3] = arg1 * arg2
 
-    def intcode_operation_3(self, index, program_code_list: list, input: int):  # save value
-        #[arg1] = self.get_op_arguments(index, program_code_list)
-        if program_code_list[0] == 2:
-            arg1 = self.relative_base_idx + self.program_codes[index+1]
-        else:
-            arg1 = self.program_codes[index+1]
+    def intcode_operation_3(self, index, program_code_list: list, input: int):  # save input value
+        [arg1] = self.get_opcode_arguments(index, program_code_list, 1)
         self.program_codes[arg1] = input
 
-    def intcode_operation_4(self, index,program_code_list: list):            # retrieve value
-        [arg1] = self.get_op_arguments(index, program_code_list)
+    def intcode_operation_4(self, index, program_code_list: list):            # retrieve value
+        [arg1] = self.get_opcode_arguments(index, program_code_list)
         if self.output[0] == -1:
             self.output[0] = arg1
         else:
             self.output.append(arg1)
 
-    def intcode_operation_5(self,index, program_code_list: list)->int:           # jump if Nonzero
-        [arg1, arg2] = self.get_op_arguments(index, program_code_list)
+    def intcode_operation_5(self, index, program_code_list: list) -> int:           # jump if Nonzero
+        [arg1, arg2] = self.get_opcode_arguments(index, program_code_list, 2)
         if arg1 != 0:
-            idx = arg2
+            new_idx = arg2
         else:
-            idx = index + 3
-        return idx
+            new_idx = index + 3
+        return new_idx
 
-    def intcode_operation_6(self, index, program_code_list: list)->int:           # jump if False
-        [arg1, arg2] = self.get_op_arguments(index, program_code_list)
+    def intcode_operation_6(self, index, program_code_list: list) -> int:           # jump if False
+        [arg1, arg2] = self.get_opcode_arguments(index, program_code_list, 2)
         if arg1 == 0:
-            idx = arg2
+            new_idx = arg2
         else:
-            idx = index + 3
-        return idx
+            new_idx = index + 3
+        return new_idx
 
     def intcode_operation_7(self, index, program_code_list: list) -> bool:  #less than
-        [arg1, arg2] =self.get_op_arguments(index, program_code_list)
-        idx_result = self.program_codes[index + 3]
+        [arg1, arg2, arg3] = self.get_opcode_arguments(index, program_code_list, 3)
         if arg1 < arg2:
-            self.program_codes[idx_result] = 1
+            self.program_codes[arg3] = 1
         else:
-            self.program_codes[idx_result] = 0
+            self.program_codes[arg3] = 0
 
     def intcode_operation_8(self, index, program_code_list: list)-> bool:  # is equals
-        [arg1, arg2] = self.get_op_arguments(index, program_code_list)
-        idx_result = self.program_codes[index + 3]
+        [arg1, arg2, arg3] = self.get_opcode_arguments(index, program_code_list, 3)
         if arg1 == arg2:
-            self.program_codes[idx_result] = 1
+            self.program_codes[arg3] = 1
         else:
-            self.program_codes[idx_result] = 0
+            self.program_codes[arg3] = 0
 
     def intcode_operation_9(self,index, program_code_list: list):
-        [arg1] = self.get_op_arguments(index, program_code_list)
+        [arg1] = self.get_opcode_arguments(index, program_code_list, 1)
         self.relative_base_idx += arg1
