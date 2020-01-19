@@ -83,5 +83,13 @@ class Day9_part1(unittest.TestCase):
         print('Boost Keycode',  program_output)
         self.assertEqual(int, type(program_output[0]))
 
+class Day9_part2(unittest.TestCase):
+    def test_something(self):
+        input_program = 'Day_9_Sensor_Boost/Day9_input.txt'
+        myIntCoder = IntCode(input_program)
+        program_output = myIntCoder.run_Intcode_with_input_output(2)
+        print('coordinates of the distress signal',  program_output)
+        self.assertEqual(int, type(program_output[0]))
+
 if __name__ == '__main__':
     unittest.main()
